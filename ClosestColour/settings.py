@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 
+from closest_colour.colours import SRGBKDTreeColourMatcher, webcolors_to_ours, LabKDTreeColourMatcher
+from closest_colour.images import MeanImageColourSummariser, KMeansImageColourSummariser
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -38,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'closest_colour.apps.ClosestColourConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -123,3 +127,33 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Custom settings specific to ClosestColour.
+
+# Assumption: the list of colours changes rarely, so is defined statically.
+#
+# I needed some example colours to test with. Since CSS defines a nice list of colours,
+# I found a Python module which lists them in a convenient format, and used that
+# as the list of colours to compare to. There are ~150 of them, which is probably
+# a realistic number to make sure performance is OK.
+COLOURS = webcolors_to_ours()
+
+COLOUR_MATCHERS = {
+    "srgb": SRGBKDTreeColourMatcher(COLOURS),
+    "lab": LabKDTreeColourMatcher(COLOURS),
+}
+
+DEFAULT_MAX_DISTANCES = {
+    "srgb": 1.0,
+    "lab": 10.0,
+}
+
+DEFAULT_COLOUR_SPACE = "srgb"
+
+IMAGE_SUMMARISERS = {
+    "mean": MeanImageColourSummariser(),
+    "kmeans": KMeansImageColourSummariser(),
+}
+
+DEFAULT_IMAGE_SUMMARISER = "kmeans"
