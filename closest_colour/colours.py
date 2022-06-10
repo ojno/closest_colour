@@ -10,6 +10,8 @@ import webcolors
 HEX_COLOUR_RE = re.compile(r"#(?P<R>[0-9a-fA-F]{2})(?P<G>[0-9a-fA-F]{2})(?P<B>[0-9a-fA-F]{2})")
 
 
+# Assumption: the list of colours changes rarely, so is defined statically.
+#
 # I needed some example colours to test with. Since CSS defines a nice list of colours,
 # I found a Python module which lists them in a convenient format, and used that
 # as the list of colours to compare to. There are ~150 of them, which is probably
@@ -48,6 +50,12 @@ OUR_SRGB_KDTREE = create_kdtree(OUR_COLOURS_DICT)
 OUR_LAB_KDTREE = create_kdtree({name: convert_color(colour, LabColor) for name, colour in OUR_COLOURS_DICT.items()})
 
 
-def nearest_colour_name(target: ColorBase, kdtree=OUR_LAB_KDTREE) -> str:
+# In [30]: timeit.timeit(lambda: colours.nearest_colour_name(sRGBColor(random.random(), random.random(), random.random())
+#     ...: ), number=100000) / 100000.0
+# Out[30]: 6.836906400043517e-05
+#
+# => on my hardware, matching a colour to its nearest in the list with this approach
+#    runs more than 100000 times per second. This is unlikely to be a bottleneck.
+def nearest_colour_name(target: ColorBase, kdtree=OUR_LAB_KDTREE) -> Tuple[str, float]:
     distance, index = kdtree.query(colour_to_srgb_floats(target), k=1)
-    return OUR_COLOURS_LIST[index][0]
+    return OUR_COLOURS_LIST[index][0], distance
