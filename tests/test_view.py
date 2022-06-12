@@ -142,11 +142,11 @@ def test_view_samples(
     expected_distance: float,
     requests_mock: Mocker,
 ) -> None:
-    settings.COLOURS = TEST_COLOURS_SRGB
-    settings.COLOUR_MATCHERS = {"srgb": SRGBKDTreeColourMatcher(settings.COLOURS)}
+    setattr(settings, "COLOURS", TEST_COLOURS_SRGB)
+    setattr(settings, "COLOUR_MATCHERS", {"srgb": SRGBKDTreeColourMatcher(getattr(settings, "COLOURS"))})
 
     url = f"http://test-colour-matching.test/{filename}"
-    requests_mock.get(url, content=open(settings.BASE_DIR / filename, "rb").read())
+    requests_mock.get(url, content=open(getattr(settings, "BASE_DIR") / filename, "rb").read())
 
     arf = APIRequestFactory()
     request = arf.get(PATH + f"?url={url}")

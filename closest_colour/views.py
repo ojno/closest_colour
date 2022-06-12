@@ -16,8 +16,8 @@ class MatchColour(APIView):
     def get(self, request: Request) -> Response:
         errors = []
 
-        if "url" in request.query_params:
-            url = request.query_params["url"]
+        url = request.query_params.get("url", None)
+        if url is not None:
             parsed_url = urllib.parse.urlparse(url)
             if parsed_url.scheme.lower() not in ("http", "https"):
                 # prevent file:// attacks etc
