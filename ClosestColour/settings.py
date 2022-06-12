@@ -149,7 +149,7 @@ COLOUR_MATCHERS = {
 }
 
 DEFAULT_MAX_DISTANCES = {
-    "srgb": 1.0,
+    "srgb": 0.2,
     "lab": 10.0,
 }
 

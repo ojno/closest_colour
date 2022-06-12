@@ -1,7 +1,7 @@
 import urllib.parse
 from io import BytesIO
-from typing import cast
 
+import PIL
 import requests
 from django.conf import settings
 from rest_framework import permissions, status
@@ -18,10 +18,6 @@ class MatchColour(APIView):
 
         if "url" in request.query_params:
             url = request.query_params["url"]
-            if not isinstance(url, str):
-                errors.append("Please specify only one 'url' query parameter")
-            url = cast(str, url)
-
             parsed_url = urllib.parse.urlparse(url)
             if parsed_url.scheme.lower() not in ("http", "https"):
                 # prevent file:// attacks etc
@@ -33,16 +29,16 @@ class MatchColour(APIView):
         space = request.query_params.get("colour_space", settings.DEFAULT_COLOUR_SPACE).lower()
         if space not in settings.COLOUR_MATCHERS or space not in settings.DEFAULT_MAX_DISTANCES:
             errors.append("Invalid colour space")
-
-        max_distance_str = request.query_params.get("max_distance", None)
-        if max_distance_str is None:
-            max_distance = settings.DEFAULT_MAX_DISTANCES[space]
         else:
-            try:
-                max_distance = float(max_distance_str)
-            except ValueError:
-                max_distance = -1.0  # for "might be referenced before assignment"
-                errors.append("Invalid max distance")
+            max_distance_str = request.query_params.get("max_distance", None)
+            if max_distance_str is None:
+                max_distance = settings.DEFAULT_MAX_DISTANCES[space]
+            else:
+                try:
+                    max_distance = float(max_distance_str)
+                except ValueError:
+                    max_distance = -1.0  # for "might be referenced before assignment"
+                    errors.append("Invalid max distance")
 
         summariser = request.query_params.get("summariser", settings.DEFAULT_IMAGE_SUMMARISER).lower()
         if summariser not in settings.IMAGE_SUMMARISERS:
@@ -53,7 +49,14 @@ class MatchColour(APIView):
 
         # This is potentially a big security hole, at the very least for reflected DDOSes.
         # Make sure this view's permissions are set to at least IsAuthenticated.
-        r = requests.get(url)
+        try:
+            r = requests.get(url)
+        except requests.RequestException:
+            return Response(
+                {"errors": ["Could not fetch the URL given, could not connect"]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if not r.ok:
             return Response(
                 {"errors": [f"Could not fetch the URL given, status code was {r.status_code}"]},
@@ -61,7 +64,11 @@ class MatchColour(APIView):
             )
         image_file = BytesIO(r.content)
 
-        image_colour = settings.IMAGE_SUMMARISERS[summariser].summarise(image_file)
+        try:
+            image_colour = settings.IMAGE_SUMMARISERS[summariser].summarise(image_file)
+        except PIL.UnidentifiedImageError:
+            return Response({"errors": ["Could not parse image"]}, status=status.HTTP_400_BAD_REQUEST)
+
         nearest_colour, distance = settings.COLOUR_MATCHERS[space].nearest(image_colour)
 
         if distance > max_distance:
