@@ -1,0 +1,32 @@
+$ curl http://localhost:8000/colours/match
+{"detail":"Authentication credentials were not provided."}
+$ curl -u admin:admin http://localhost:8000/colours/match
+{"errors":["Please specify a 'url' query parameter"]}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://roiusfghoserfso.osaifjh
+{"errors":["Could not fetch the URL given, could not connect"]}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://example.com/
+{"errors":["Could not parse image"]}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/1x1black.png
+{"colour":"black","distance":0.0}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/1x1white.png
+{"colour":"white","distance":0.0}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/black-square-white-bg.png
+{"colour":"black","distance":0.0}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/black-square-white-bg.png\&summariser=mean
+{"colour":"darkslategray","distance":0.14141972736423317}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/test-sample-black.png
+{"errors":["No colour found within 0.2 units"]}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/test-sample-black.png\&max_distance=0.5
+{"colour":"darkslategray","distance":0.22602562221042527}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/test-sample-navy.png
+{"colour":"midnightblue","distance":0.18284981204825806}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/test-sample-grey.png
+{"colour":"darkslategray","distance":0.059687168744809664}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/test-sample-teal.png
+{"colour":"teal","distance":0.13788915928967646}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/test-sample-teal.png\&colour_space=lab\&max_distance=20.0
+{"colour":"darkslategray","distance":14.235119630291749}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/hsvnoise.png
+{"colour":"gray","distance":0.06976444206694024}
+$ curl -u admin:admin http://localhost:8000/colours/match?url=http://jonathanfrench.net/hsvnoise.png\&summariser=mean
+{"colour":"gray","distance":0.05070346096430818}
