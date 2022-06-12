@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from io import IOBase
 from typing import Optional, Union
 
-from colormath.color_objects import sRGBColor
 import numpy
+from colormath.color_objects import sRGBColor
 from PIL import Image
 from scipy.cluster.vq import kmeans2
 
@@ -38,7 +38,9 @@ class ImageColourSummariser(ABC):
         return numpy_image / 255.0
 
     @abstractmethod
-    def summarise(self, image_file: IOBase, resize_to: Union[Optional[int], Sentinel] = SENTINEL) -> sRGBColor:
+    def summarise(
+        self, image_file: IOBase, resize_to: Union[Optional[int], Sentinel] = SENTINEL
+    ) -> sRGBColor:  # pragma: nocover
         pass
 
 

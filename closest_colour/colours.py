@@ -1,12 +1,11 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Dict, Tuple, List, Type, TypeVar, Generic
+from typing import Dict, Tuple, Type
 
-from colormath.color_conversions import convert_color
-from colormath.color_objects import ColorBase, sRGBColor, LabColor
-from scipy.spatial import KDTree
 import webcolors
-
+from colormath.color_conversions import convert_color
+from colormath.color_objects import ColorBase, LabColor, sRGBColor
+from scipy.spatial import KDTree
 
 HEX_COLOUR_RE = re.compile(r"#(?P<R>[0-9a-fA-F]{2})(?P<G>[0-9a-fA-F]{2})(?P<B>[0-9a-fA-F]{2})")
 
@@ -22,8 +21,8 @@ def webcolors_to_ours(source: Dict[str, str] = webcolors.CSS3_NAMES_TO_HEX) -> D
     return our_colours
 
 
-# In [30]: timeit.timeit(lambda: colours.nearest_colour_name(sRGBColor(random.random(), random.random(), random.random())
-#     ...: ), number=100000) / 100000.0
+# In [30]: timeit.timeit(lambda: colours.nearest_colour_name(sRGBColor(random.random(), random.random(), random.random()
+#    ...: )), number=100000) / 100000.0
 # Out[30]: 6.836906400043517e-05
 #
 # => on my hardware, matching a colour to its nearest in the list with this approach
@@ -39,7 +38,7 @@ class ColourMatcher(ABC):
             return ColourMatcher.colour_to_floats(convert_color(colour, colour_type), colour_type)
 
     @abstractmethod
-    def nearest(self, target: ColorBase) -> Tuple[str, float]:
+    def nearest(self, target: ColorBase) -> Tuple[str, float]:  # pragma: nocover
         pass
 
 
