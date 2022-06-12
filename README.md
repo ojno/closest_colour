@@ -8,11 +8,13 @@ Setup and Usage
 python3 -m venv venv
 source venv/bin/activate , or .\venv\Scripts\Activate.ps1 , or etc
 pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser (and follow the prompts)
 python manage.py runserver
 
 (elsewhere)
 
-curl http://localhost:8000/colours/match?url=http://jonathanfrench.net/test-sample-teal.png
+curl -u user:pass http://localhost:8000/colours/match?url=http://jonathanfrench.net/test-sample-teal.png
 ```
 
 See `SAMPLE_RUNS.txt` for some sample JSON output, from manual requests using `curl`.
@@ -26,6 +28,55 @@ There are tests in the `tests` directory using `pytest`, which can be run with
 
 ```
 pytest tests
+```
+
+Directory Map
+-------------
+
+```
+.
+├── ClosestColour  ...............  Django project package
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py  .............  Django settings file (e.g. colour palette)
+│   ├── urls.py
+│   └── wsgi.py
+├── README.md
+├── SAMPLE_RUNS.txt
+├── SCREENSHOT.png
+├── closest_colour  ..............  Django app package
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── colours.py  ..............  Implementation of nearest neighbour for colours
+│   ├── images.py  ...............  Implementation of image representative colour extraction
+│   ├── migrations
+│   │   ├── __init__.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py  ................  Implementation of REST API endpoint
+├── db.sqlite3
+├── images  ......................  Test images
+│   ├── 1x1black.png
+│   ├── 1x1white.png
+│   ├── black-square-white-bg.png
+│   ├── hsvnoise.png
+│   ├── test-sample-black.png
+│   ├── test-sample-grey.png
+│   ├── test-sample-navy.png
+│   └── test-sample-teal.png
+├── manage.py
+├── pyproject.toml
+├── requirements.txt
+├── setup.cfg
+├── templates
+└── tests
+    ├── __init__.py
+    ├── conftest.py
+    ├── test_colours.py  .........  Tests for nearest neighbour for colours
+    ├── test_images.py  ..........  Tests for image representative colour extraction
+    └── test_view.py  ............  Tests for REST API endpoint
 ```
 
 The Task
@@ -58,7 +109,9 @@ the nearest neighbour in. However, it is not perceptually uniform: because our e
 see all colours equally well, two colours at a given distance in one part of the space, e.g.
 two greens, may seem more or less similar to a human observer than e.g. two blues. To combat
 this, we can first convert our colours (via a nonlinear transformation) to a space such as the
-`Lab` space, which is designed to be perceptually uniform for linear distances.
+`Lab` space, which is designed to be perceptually uniform for linear distances. I used the
+`colormath` package to convert back and forth between colour spaces, and for its classes used
+to represent colours.
 
 However, my experiments with the `Lab` space seemed to give nonintuitive results for the test
 images, with `test-sample-teal.png` being given as closest to `darkslategray` rather than `teal`,
@@ -166,6 +219,10 @@ Given that this endpoint (with the assumptions I have made) is a very standalone
 any dependencies between requests, I would host this on a 'serverless' platform like AWS Lambda
 or Google App Engine. This relieves developers from having to worry about managing servers and
 so on, and allows much easier scaling on a pay-as-you-go basis.
+
+There are some very important changes that would need to be made before this could be deployed;
+things like setting `DEBUG` to `False` and making settings like `SECRET_KEY` be taken from
+e.g. an environment variable or other secret store rather than being stored with the code.
 
 I have implemented a full suite of tests for my solution, with 100% line coverage for all three
 parts of the system. This includes unit tests for both the subcomponents of the problem,
