@@ -23,3 +23,7 @@ extend-exclude = "^/venv/"
 [tool.isort]
 profile = "black"
 skip = "venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+DJANGO_SETTINGS_MODULE = "ClosestColour.settings"
