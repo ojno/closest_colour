@@ -18,13 +18,13 @@ from closest_colour.images import (
     (("1x1white.png", [1.0, 1.0, 1.0]), ("1x1black.png", [0.0, 0.0, 0.0])),
 )
 def test_image_file_to_numpy_array_1x1(filename: str, colour_floats: List[float], resize_to: Optional[int]) -> None:
-    image_file = open(settings.BASE_DIR / filename, "rb")
+    image_file = open(settings.BASE_DIR / "images" / filename, "rb")
     array = ImageColourSummariser.image_file_to_numpy_array(image_file, resize_to=resize_to)
     assert numpy.array_equal(array, numpy.asarray([[colour_floats]]))
 
 
 def test_image_file_to_numpy_array_200x200() -> None:
-    image_file = open(settings.BASE_DIR / "1x1white.png", "rb")
+    image_file = open(settings.BASE_DIR / "images" / "1x1white.png", "rb")
     array = ImageColourSummariser.image_file_to_numpy_array(image_file)
     assert numpy.array_equal(array, numpy.ones((200, 200, 3)))
 
@@ -37,7 +37,7 @@ def test_image_file_to_numpy_array_200x200() -> None:
 def test_image_summariser_sanity_1x1(
     filename: str, expected_colour: sRGBColor, summariser: ImageColourSummariser
 ) -> None:
-    image_file = open(settings.BASE_DIR / filename, "rb")
+    image_file = open(settings.BASE_DIR / "images" / filename, "rb")
     actual_colour = summariser.summarise(image_file)
     assert actual_colour.get_value_tuple() == expected_colour.get_value_tuple()
 
@@ -53,7 +53,7 @@ def test_image_summariser_sanity_1x1(
 )
 def test_mean_image_summariser_regression(filename: str, expected_colour: sRGBColor) -> None:
     summariser = MeanImageColourSummariser()
-    image_file = open(settings.BASE_DIR / filename, "rb")
+    image_file = open(settings.BASE_DIR / "images" / filename, "rb")
     assert summariser.summarise(image_file).get_value_tuple() == expected_colour.get_value_tuple()
 
 
@@ -68,7 +68,7 @@ def test_mean_image_summariser_regression(filename: str, expected_colour: sRGBCo
 )
 def test_kmeans_image_summariser_regression(filename: str, expected_colour: sRGBColor) -> None:
     summariser = KMeansImageColourSummariser()
-    image_file = open(settings.BASE_DIR / filename, "rb")
+    image_file = open(settings.BASE_DIR / "images" / filename, "rb")
     # we allow some tolerance in the kmeans summariser because it involves randomness
     expected_red, expected_green, expected_blue = expected_colour.get_value_tuple()
     actual_red, actual_green, actual_blue = summariser.summarise(image_file).get_value_tuple()

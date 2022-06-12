@@ -146,7 +146,7 @@ def test_view_samples(
     setattr(settings, "COLOUR_MATCHERS", {"srgb": SRGBKDTreeColourMatcher(getattr(settings, "COLOURS"))})
 
     url = f"http://test-colour-matching.test/{filename}"
-    requests_mock.get(url, content=open(getattr(settings, "BASE_DIR") / filename, "rb").read())
+    requests_mock.get(url, content=open(getattr(settings, "BASE_DIR") / "images" / filename, "rb").read())
 
     arf = APIRequestFactory()
     request = arf.get(PATH + f"?url={url}")
